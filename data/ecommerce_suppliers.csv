@@ -1,9 +1,0 @@
-supplier_id,supplier_name,contact_name,email,phone,address,rating,is_active
-1,North Distributor,Mary Johnson,contact@northdistributor.com,+1 757-350-1116,1417 New York,3.6,true
-2,South Importer,Anna Brown,contact@southimporter.com,+1 805-520-1737,7032 Philadelphia,3.2,false
-3,Central Wholesale,Anna Brown,contact@centralwholesale.com,+1 743-334-9751,1786 Austin,4,true
-4,Express Logistics,Anna Brown,contact@expresslogistics.com,+1 550-378-3343,9621 Austin,3.6,true
-5,United Providers,John Smith,contact@unitedproviders.com,+1 829-456-2772,2124 New York,5,true
-6,Global Supply,Charles Wilson,contact@globalsupply.com,+1 676-718-9433,8877 Houston,4.4,true
-7,FastImport,Anna Brown,contact@fastimport.com,+1 735-408-9284,189 New York,3.6,false
-8,QualitySource,Charles Wilson,contact@qualitysource.com,+1 747-730-3860,3136 Philadelphia,4.3,true
