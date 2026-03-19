@@ -24,3 +24,17 @@ print(f"Orders: {len(df_orders)} filas, {len(df_orders.columns)} columns")
 print(f"Order Items: {len(df_order_items)} rows")
 print(f"Customers: {len(df_customers)} rows")
 print(f"Products: {len(df_products)} rows")
+
+print("\n First rows from orders")
+print(df_orders.head())
+print("\n Orders info:")
+print(df_orders.info())
+
+print("\n Nulls - order_items:")
+print(df_order_items.isnull().sum())
+
+print("\n Nulls - customers:")
+print(df_customers.isnull().sum())
+
+print("\n Nulls - products:")
+print(df_products.isnull().sum())
