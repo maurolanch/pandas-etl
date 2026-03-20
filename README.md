@@ -31,27 +31,28 @@ The pipeline processes the following datasets:
      - CSV
      - Parquet
 
----
+```md
 
 ## 📁 Project Structure
+
+```bash
 project/
 ├── data/
-│ ├── ecommerce_orders.csv
-│ ├── ecommerce_order_items.csv
-│ ├── ecommerce_customers.csv
-│ └── ecommerce_products.csv
+│   ├── ecommerce_orders.csv
+│   ├── ecommerce_order_items.csv
+│   ├── ecommerce_customers.csv
+│   └── ecommerce_products.csv
 │
 ├── output/
-│ ├── ecommerce_orders_clean.csv
-│ ├── top_spenders.csv
-│ ├── sales_by_month.csv
-│ ├── best_selling_product.csv
-│ └── *.parquet
+│   ├── ecommerce_orders_clean.csv
+│   ├── top_spenders.csv
+│   ├── sales_by_month.csv
+│   ├── best_selling_product.csv
+│   └── *.parquet
 │
 ├── etl.py
 └── README.md
-
----
+```
 
 ## ⚙️ Installation
 
