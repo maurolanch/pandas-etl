@@ -31,8 +31,6 @@ The pipeline processes the following datasets:
      - CSV
      - Parquet
 
-```md
-
 ## 📁 Project Structure
 
 ```bash
