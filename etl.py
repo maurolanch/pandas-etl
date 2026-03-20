@@ -92,3 +92,44 @@ print("\n Data types after conversion:")
 print(df_orders_clean.dtypes)
 
 print(f"\nRows before: {len(df_orders)}, rows after: {len(df_orders_clean)}")
+
+# 1. Who are the top 5 spenders?
+
+top_spenders = (
+    df_orders_clean
+    .groupby('customer_id', as_index=False)
+    .agg(
+        total_amount=('total_amount', 'sum'),
+        order_count=('order_id', 'count')
+    )
+    .sort_values(by='total_amount', ascending=False)
+    .head(5)
+)
+print("\n Top 5 spenders:")
+print(top_spenders)
+
+# 2. What is the best-selling product (by quantity)?
+
+best_selling_product = (
+    df_order_items
+    .groupby('product_id', as_index=False)[['quantity']]
+    .sum()
+    .sort_values(by='quantity', ascending=False)
+    .head(1)
+    .merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
+)
+print("\n Best-selling product:")
+print(best_selling_product)
+
+#  3. How did sales evolve month by month?
+
+df_orders_clean['month'] = df_orders_clean['order_date'].dt.to_period('M')
+
+sales_by_month = (
+    df_orders_clean
+    .groupby('month', as_index=False)
+    .agg(total_sales=('total_amount', 'sum'))
+    .sort_values(by='month')
+)
+print("\n Sales by month:") 
+print(sales_by_month)
