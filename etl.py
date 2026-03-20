@@ -133,3 +133,29 @@ sales_by_month = (
 )
 print("\n Sales by month:") 
 print(sales_by_month)
+
+print(df_orders_clean)
+
+#Saving the cleaned orders data to a new CSV file
+df_orders_clean.to_csv('output/ecommerce_orders_clean.csv', index=False)
+
+#saving top 5 spenders to a new CSV file
+top_spenders.to_csv('output/top_spenders.csv', index=False)
+
+#saving sales by month to a new CSV file
+sales_by_month.to_csv('output/sales_by_month.csv', index=False)
+
+#saving best selling product to a new CSV file
+best_selling_product.to_csv('output/best_selling_product.csv', index=False)
+
+#saving the cleaned orders data to a parquet file
+df_orders_clean.to_parquet('output/ecommerce_orders_clean.parquet', index=False)
+
+#saving top 5 spenders to a parquet file
+top_spenders.to_parquet('output/top_spenders.parquet', index=False)
+
+#saving sales by month to a parquet file
+sales_by_month.to_parquet('output/sales_by_month.parquet', index=False)
+
+#saving best selling product to a parquet file
+best_selling_product.to_parquet('output/best_selling_product.parquet', index=False)
