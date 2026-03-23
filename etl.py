@@ -1,161 +1,216 @@
 import pandas as pd
 import glob, os
+from typing import Dict
 
-# Verifying that the downloaded CSV files exist
-files = glob.glob('data/ecommerce_*.csv')
-if not files:
-    print("❌ Files not found. Make sure to download them into the data/ folder.")
-    print("   You should have: ecommerce_orders.csv, ecommerce_customers.csv, etc.")
-else:
-    print(f"📂 Files found: {len(files)}")
-    for f in sorted(files):
-        print(f"  - {os.path.basename(f)}")
+# Verifying that the downloaded CSV files exist in the data/ folder
+def verify_files(data_dir: str = "data") -> list:
+    """
+    Verify that CSV files exist in the directory.
+    """
+    pattern = os.path.join(data_dir, 'ecommerce_*.csv')
+    files = glob.glob(pattern)
+
+    if not files:
+        print("Files not found. Make sure to download them into the data/ folder.")
+        print("   You should have: ecommerce_orders.csv, ecommerce_customers.csv, etc.")
+    else:
+        print(f"Files found: {len(files)}")
+        for f in sorted(files):
+            print(f"  - {os.path.basename(f)}")
+    return files
+
+def load_csv(filepath: str) -> pd.DataFrame:
+    """
+    Load a CSV file into a DataFrame.
+    """
+    try:
+        df = pd.read_csv(filepath)
+        print(f"Loaded {os.path.basename(filepath)} with {len(df)} rows and {len(df.columns)} columns.")
+        return df
+    except Exception as e:
+        print(f"Error loading {filepath}: {e}")
+        return pd.DataFrame()  # Return empty DataFrame on error
+
+def load_all_tables(data_dir: str = "data") -> Dict[str, pd.DataFrame]:
+    """
+    Load all necessary tables for the pipeline.
+    """
+    tables = {
+        "orders": "ecommerce_orders.csv",
+        "order_items": "ecommerce_order_items.csv",
+        "customers": "ecommerce_customers.csv",
+        "products": "ecommerce_products.csv",
+    }
+
+    dataframes = {}
+
+    for name, filename in tables.items():
+        filepath = os.path.join(data_dir, filename)
+        dataframes[name] = load_csv(filepath)
+
+    return dataframes
+
+# # Load main CSVs into DataFrames
+# df_orders = pd.read_csv('data/ecommerce_orders.csv')
+# df_order_items = pd.read_csv('data/ecommerce_order_items.csv')
+# df_customers = pd.read_csv('data/ecommerce_customers.csv')
+# df_products = pd.read_csv('data/ecommerce_products.csv')
+
+# # Exploring the data
+# print(f"\n Summary:")
+# print(f"Orders: {len(df_orders)} rows, {len(df_orders.columns)} columns")
+# print(f"Order Items: {len(df_order_items)} rows")
+# print(f"Customers: {len(df_customers)} rows")
+# print(f"Products: {len(df_products)} rows")
+
+# print("\n First rows from orders")
+# print(df_orders.head())
+# print("\n Orders info:")
+# print(df_orders.info())
+
+# print("\n Nulls - orders:")
+# print(df_orders.isnull().sum())
+
+# print("\n Nulls - order_items:")
+# print(df_order_items.isnull().sum())
+
+# print("\n Nulls - customers:")
+# print(df_customers.isnull().sum())
+
+# print("\n Nulls - products:")
+# print(df_products.isnull().sum())
 
 
-# Load main CSVs into DataFrames
-df_orders = pd.read_csv('data/ecommerce_orders.csv')
-df_order_items = pd.read_csv('data/ecommerce_order_items.csv')
-df_customers = pd.read_csv('data/ecommerce_customers.csv')
-df_products = pd.read_csv('data/ecommerce_products.csv')
+# # 1. COPY to create df_orders_clean, so we can keep the original df_orders intact for reference
+# df_orders_clean = df_orders.copy()
 
-# Exploring the data
-print(f"\n Summary:")
-print(f"Orders: {len(df_orders)} rows, {len(df_orders.columns)} columns")
-print(f"Order Items: {len(df_order_items)} rows")
-print(f"Customers: {len(df_customers)} rows")
-print(f"Products: {len(df_products)} rows")
+# # 2. fix data types
 
-print("\n First rows from orders")
-print(df_orders.head())
-print("\n Orders info:")
-print(df_orders.info())
+# # Date
+# df_orders_clean['order_date'] = pd.to_datetime(df_orders_clean['order_date'], errors='coerce')
 
-print("\n Nulls - orders:")
-print(df_orders.isnull().sum())
+# # Numeric (just in case there are some non-numeric values, we set errors='coerce' to convert them to NaN)
+# df_orders_clean['total_amount'] = pd.to_numeric(df_orders_clean['total_amount'], errors='coerce')
+# df_orders_clean['shipping_cost'] = pd.to_numeric(df_orders_clean['shipping_cost'], errors='coerce')
 
-print("\n Nulls - order_items:")
-print(df_order_items.isnull().sum())
+# # String
+# df_orders_clean['order_number'] = df_orders_clean['order_number'].astype("string")
 
-print("\n Nulls - customers:")
-print(df_customers.isnull().sum())
+# # 3. handle missing values
 
-print("\n Nulls - products:")
-print(df_products.isnull().sum())
+# # critical fields: order_id, customer_id, total_amount - we cannot have missing values here, so we drop those rows
+# df_orders_clean = df_orders_clean.dropna(subset=['order_id', 'customer_id', 'total_amount'])
+
+# # optional fields: shipping_cost, discount_percent - we can fill missing values with 0, assuming no shipping cost or no discount
+# df_orders_clean['discount_percent'] = df_orders_clean['discount_percent'].fillna(0)
 
 
-# 1. COPY to create df_orders_clean, so we can keep the original df_orders intact for reference
-df_orders_clean = df_orders.copy()
+# # 4. duplicates
 
-# 2. fix data types
+# # complete duplicates
+# duplicates = df_orders_clean.duplicated().sum()
+# print(f"Found duplicates: {duplicates}")
 
-# Date
-df_orders_clean['order_date'] = pd.to_datetime(df_orders_clean['order_date'], errors='coerce')
+# # duplicates per pk
+# duplicates_id = df_orders_clean.duplicated(subset=['order_id']).sum()
+# print(f"Order_id Duplicates: {duplicates_id}")
 
-# Numeric (just in case there are some non-numeric values, we set errors='coerce' to convert them to NaN)
-df_orders_clean['total_amount'] = pd.to_numeric(df_orders_clean['total_amount'], errors='coerce')
-df_orders_clean['shipping_cost'] = pd.to_numeric(df_orders_clean['shipping_cost'], errors='coerce')
+# # drop complete duplicates
+# df_orders_clean = df_orders_clean.drop_duplicates()
 
-# String
-df_orders_clean['order_number'] = df_orders_clean['order_number'].astype("string")
+# # keep unique order_id, if there are duplicates, we keep the last one (assuming it's the most updated record)
+# df_orders_clean = df_orders_clean.sort_values('order_date').drop_duplicates(
+#     subset=['order_id'], 
+#     keep='last'
+# )
 
-# 3. handle missing values
+# # 5. final check
 
-# critical fields: order_id, customer_id, total_amount - we cannot have missing values here, so we drop those rows
-df_orders_clean = df_orders_clean.dropna(subset=['order_id', 'customer_id', 'total_amount'])
+# print("\n Data types after conversion:")
+# print(df_orders_clean.dtypes)
 
-# optional fields: shipping_cost, discount_percent - we can fill missing values with 0, assuming no shipping cost or no discount
-df_orders_clean['discount_percent'] = df_orders_clean['discount_percent'].fillna(0)
+# print(f"\nRows before: {len(df_orders)}, rows after: {len(df_orders_clean)}")
+
+# # 1. Who are the top 5 spenders?
+
+# top_spenders = (
+#     df_orders_clean
+#     .groupby('customer_id', as_index=False)
+#     .agg(
+#         total_amount=('total_amount', 'sum'),
+#         order_count=('order_id', 'count')
+#     )
+#     .sort_values(by='total_amount', ascending=False)
+#     .head(5)
+# )
+# print("\n Top 5 spenders:")
+# print(top_spenders)
+
+# # 2. What is the best-selling product (by quantity)?
+
+# best_selling_product = (
+#     df_order_items
+#     .groupby('product_id', as_index=False)[['quantity']]
+#     .sum()
+#     .sort_values(by='quantity', ascending=False)
+#     .head(1)
+#     .merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
+# )
+# print("\n Best-selling product:")
+# print(best_selling_product)
+
+# #  3. How did sales evolve month by month?
+
+# df_orders_clean['month'] = df_orders_clean['order_date'].dt.to_period('M')
+
+# sales_by_month = (
+#     df_orders_clean
+#     .groupby('month', as_index=False)
+#     .agg(total_sales=('total_amount', 'sum'))
+#     .sort_values(by='month')
+# )
+# print("\n Sales by month:") 
+# print(sales_by_month)
+
+# print(df_orders_clean)
+
+# #Saving the cleaned orders data to a new CSV file
+# df_orders_clean.to_csv('output/ecommerce_orders_clean.csv', index=False)
+
+# #saving top 5 spenders to a new CSV file
+# top_spenders.to_csv('output/top_spenders.csv', index=False)
+
+# #saving sales by month to a new CSV file
+# sales_by_month.to_csv('output/sales_by_month.csv', index=False)
+
+# #saving best selling product to a new CSV file
+# best_selling_product.to_csv('output/best_selling_product.csv', index=False)
+
+# #saving the cleaned orders data to a parquet file
+# df_orders_clean.to_parquet('output/ecommerce_orders_clean.parquet', index=False)
+
+# #saving top 5 spenders to a parquet file
+# top_spenders.to_parquet('output/top_spenders.parquet', index=False)
+
+# #saving sales by month to a parquet file
+# sales_by_month.to_parquet('output/sales_by_month.parquet', index=False)
+
+# #saving best selling product to a parquet file
+# best_selling_product.to_parquet('output/best_selling_product.parquet', index=False)
 
 
-# 4. duplicates
+def main():
+    verify_files()
 
-# complete duplicates
-duplicates = df_orders_clean.duplicated().sum()
-print(f"Found duplicates: {duplicates}")
+    tables = load_all_tables()
 
-# duplicates per pk
-duplicates_id = df_orders_clean.duplicated(subset=['order_id']).sum()
-print(f"Order_id Duplicates: {duplicates_id}")
+    df_orders = tables["orders"]
+    df_order_items = tables["order_items"]
+    df_customers = tables["customers"]
+    df_products = tables["products"]
 
-# drop complete duplicates
-df_orders_clean = df_orders_clean.drop_duplicates()
+    print("\n Data loaded successfully")
 
-# keep unique order_id, if there are duplicates, we keep the last one (assuming it's the most updated record)
-df_orders_clean = df_orders_clean.sort_values('order_date').drop_duplicates(
-    subset=['order_id'], 
-    keep='last'
-)
 
-# 5. final check
-
-print("\n Data types after conversion:")
-print(df_orders_clean.dtypes)
-
-print(f"\nRows before: {len(df_orders)}, rows after: {len(df_orders_clean)}")
-
-# 1. Who are the top 5 spenders?
-
-top_spenders = (
-    df_orders_clean
-    .groupby('customer_id', as_index=False)
-    .agg(
-        total_amount=('total_amount', 'sum'),
-        order_count=('order_id', 'count')
-    )
-    .sort_values(by='total_amount', ascending=False)
-    .head(5)
-)
-print("\n Top 5 spenders:")
-print(top_spenders)
-
-# 2. What is the best-selling product (by quantity)?
-
-best_selling_product = (
-    df_order_items
-    .groupby('product_id', as_index=False)[['quantity']]
-    .sum()
-    .sort_values(by='quantity', ascending=False)
-    .head(1)
-    .merge(df_products[['product_id', 'product_name']], on='product_id', how='left')
-)
-print("\n Best-selling product:")
-print(best_selling_product)
-
-#  3. How did sales evolve month by month?
-
-df_orders_clean['month'] = df_orders_clean['order_date'].dt.to_period('M')
-
-sales_by_month = (
-    df_orders_clean
-    .groupby('month', as_index=False)
-    .agg(total_sales=('total_amount', 'sum'))
-    .sort_values(by='month')
-)
-print("\n Sales by month:") 
-print(sales_by_month)
-
-print(df_orders_clean)
-
-#Saving the cleaned orders data to a new CSV file
-df_orders_clean.to_csv('output/ecommerce_orders_clean.csv', index=False)
-
-#saving top 5 spenders to a new CSV file
-top_spenders.to_csv('output/top_spenders.csv', index=False)
-
-#saving sales by month to a new CSV file
-sales_by_month.to_csv('output/sales_by_month.csv', index=False)
-
-#saving best selling product to a new CSV file
-best_selling_product.to_csv('output/best_selling_product.csv', index=False)
-
-#saving the cleaned orders data to a parquet file
-df_orders_clean.to_parquet('output/ecommerce_orders_clean.parquet', index=False)
-
-#saving top 5 spenders to a parquet file
-top_spenders.to_parquet('output/top_spenders.parquet', index=False)
-
-#saving sales by month to a parquet file
-sales_by_month.to_parquet('output/sales_by_month.parquet', index=False)
-
-#saving best selling product to a parquet file
-best_selling_product.to_parquet('output/best_selling_product.parquet', index=False)
+if __name__ == "__main__":
+    main()
