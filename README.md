@@ -141,11 +141,9 @@ All results are saved in both **CSV** and **Parquet** formats:
 
 | File | Description |
 |------|------------|
-| `ecommerce_orders_clean` | Cleaned orders dataset |
-| `top_spenders` | Top 5 customers |
+| `top_customers` | Top 5 customers by spend |
 | `sales_by_month` | Monthly sales trends |
-| `best_selling_product` | Most sold product |
-
+| `top_product` | Most sold product |
 ---
 ## ⚠️ Data Modeling Considerations
 
