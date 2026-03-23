@@ -23,11 +23,17 @@ The pipeline processes the following datasets:
 2. **Transform**
    - Data type standardization
    - Null handling
-   - Duplicate removal
-   - Feature engineering (monthly aggregation)
+   - Duplicate removal:
+     - Orders deduplicated by `order_id` (keeping latest record)
+     - Order items deduplicated by (`order_id`, `product_id`)
+   - Data enrichment:
+     - Join with customers and products
+     - Creation of `customer_name` (first + last name)
+   - Feature engineering:
+     - `order_month` derived from `order_date`
 
 3. **Load**
-   - Export cleaned and aggregated data into `/output` as:
+   - Export aggregated business metrics into `/output`:
      - CSV
      - Parquet
 
@@ -101,24 +107,31 @@ python etl.py
 
 ## 📈 Business Insights
 
-### 🥇 Top 5 Spenders
+### 🥇 Top 5 Customers
 
 - Customers ranked by total spending  
 - Includes:
-  - Total amount spent  
-  - Number of orders  
+  - `customer_id`
+  - `customer_name`
+  - total amount spent  
+
+---
 
 ### 📦 Best-Selling Product
 
 - Product with highest quantity sold  
-- Joined with product name  
+- Includes:
+  - `product_id`
+  - `product_name`
+
+---
 
 ### 📅 Sales by Month
 
-- Monthly aggregation of total sales using:
-
-
-df['order_date'].dt.to_period('M')
+- Monthly aggregation of total sales
+- Based on:
+  - `order_month`
+  - `total_amount`
 
 ---
 
@@ -134,6 +147,19 @@ All results are saved in both **CSV** and **Parquet** formats:
 | `best_selling_product` | Most sold product |
 
 ---
+## ⚠️ Data Modeling Considerations
+
+- The dataset combines:
+  - Order-level data (`orders`)
+  - Item-level data (`order_items`)
+
+- After joining, order-level metrics (e.g. `total_amount`) may be duplicated across multiple rows.
+
+- This pipeline assumes:
+  - Aggregations are handled carefully to avoid double counting
+
+- In production scenarios:
+  - It is recommended to compute metrics at the correct grain (e.g. line-level or order-level separately)
 
 ## 🧠 Key Concepts Demonstrated
 
