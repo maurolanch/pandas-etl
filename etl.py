@@ -1,7 +1,6 @@
 import pandas as pd
 import glob, os
 from typing import Dict
-import pyarrow
 
 # Verifying that the downloaded CSV files exist in the data/ folder
 def verify_files(data_dir: str = "data") -> list:
